@@ -1,0 +1,15 @@
+{
+  "name": "rolldown-stringwidth-benchmark",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Micro-benchmark demonstrating the cost of string-width@7.x (as inlined by rolldown) on chunk-log-shaped strings.",
+  "scripts": {
+    "bench": "node benchmark/run-bench-real.mjs",
+    "bench:varlen": "node benchmark/run-bench-varlen.mjs",
+    "bench:ported": "node benchmark/run-bench.mjs"
+  },
+  "dependencies": {
+    "string-width": "7.2.0"
+  },
+  "packageManager": "pnpm@10.27.0"
+}

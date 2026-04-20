@@ -1,0 +1,20 @@
+# Real string-width@7.2.0 (same version rolldown bundles) benchmark
+# Node: v24.13.0
+
+N lines | chars/line | real (ms) | fast (ms) | ratio | per-line µs (real)
+--------|------------|-----------|-----------|-------|-------------------
+    100 |         89 |      1.06 |      0.03 |  40.6x |               10.6
+    500 |         89 |      4.49 |      0.05 |  88.7x |                9.0
+   1000 |         89 |      8.12 |      0.10 |  84.6x |                8.1
+   2000 |         89 |     17.42 |      0.21 |  81.5x |                8.7
+   5000 |         89 |     41.83 |      0.36 | 116.3x |                8.4
+  10000 |         89 |     85.03 |      0.89 |  95.4x |                8.5
+  20000 |         90 |    170.50 |      1.72 |  99.2x |                8.5
+
+# The private app build emitted 9,399 modules and 1,515 chunks.
+# If Rolldown/consola calls stringWidth N times per line × M log events,
+# the total calls required to explain a 6+ min hang (~360s) given per-call cost of ~8µs
+# is 360 / 8e-6 = 45M calls. That far exceeds any reasonable per-chunk formatting budget.
+#
+# => stringWidth alone cannot explain the full hang.
+# But it CAN be a meaningful fraction (~10-30%) of the CPU time, matching the profile.

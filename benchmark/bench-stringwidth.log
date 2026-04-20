@@ -1,0 +1,17 @@
+# stringWidth micro-benchmark
+# Context: rolldown@1.0.0-rc.15/rc.16 inlines string-width@7.x in dist/shared/rolldown-build-*.mjs
+# stringWidthFull = exact port of rolldown inlined version
+# stringWidthPatched = .length fast-path (what our local patch does)
+
+N chunks | chars/line | full (ms) | patched (ms) | ratio | full per-line µs
+---------|------------|-----------|--------------|-------|------------------
+     100 |         89 |      0.95 |         0.03 |  28.1x |             9.5
+     500 |         89 |      4.04 |         0.05 |  85.9x |             8.1
+    1000 |         89 |      8.78 |         0.09 |  93.3x |             8.8
+    2000 |         89 |     16.71 |         0.21 |  79.8x |             8.4
+    5000 |         89 |     43.55 |         0.37 | 118.1x |             8.7
+   10000 |         89 |     85.26 |         0.88 |  96.4x |             8.5
+
+# Projection: if App emits 9,399 chunks and FancyReporter.formatLogObj
+# calls stringWidth twice per line (left + right), total stringWidth calls = ~18,800.
+# Scaled cost = (full_per_line_us * 18,800) / 1000 ms

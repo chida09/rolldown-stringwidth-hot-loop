@@ -1,0 +1,113 @@
+Analysis of sampling node (pid 9645) every 1 millisecond
+Process:         node [9645]
+Path:            /Users/USER/*/node
+Load Address:    0x102798000
+Identifier:      node
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  zsh [9642]
+Target Type:     live task
+
+Date/Time:       2026-04-20 13:02:20.383 +0900
+Launch Time:     2026-04-20 13:01:33.534 +0900
+OS Version:      macOS 15.7.4 (24G517)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         3.0G
+Physical footprint (peak):  3.2G
+Idle exit:                  untracked
+----
+
+Call graph:
+    8006 Thread_518312   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 8006 start  (in dyld) + 6076  [0x195632b98]
+    +   8006 node::Start(int, char**)  (in node) + 604  [0x1028562d8]
+    +     8006 node::NodeMainInstance::Run()  (in node) + 276  [0x1028f04b0]
+    +       8006 node::SpinEventLoopInternal(node::Environment*)  (in node) + 256  [0x10279db7c]
+    +         8006 uv_run  (in node) + 408  [0x1036f5bbc]
+    +           8006 uv__io_poll  (in node) + 1512  [0x1037099ec]
+    +             8006 uv__async_io  (in node) + 304  [0x1036f5654]
+    +               8006 v8impl::(anonymous namespace)::ThreadSafeFunction::AsyncCb(uv_async_s*)  (in node) + 472  [0x10285d838]
+    +                 8006 ???  (in rolldown-binding.darwin-arm64.node)  load address 0x13a000000 + 0x24bffc  [0x13a24bffc]
+    +                   8006 napi_call_function  (in node) + 224  [0x102840e50]
+    +                     8006 v8::Function::Call(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Value>, int, v8::Local<v8::Value>*)  (in node) + 492  [0x102ab4bd8]
+    +                       8006 v8::internal::Execution::Call(v8::internal::Isolate*, v8::internal::DirectHandle<v8::internal::Object>, v8::internal::DirectHandle<v8::internal::Object>, v8::base::Vector<v8::internal::DirectHandle<v8::internal::Object> const>)  (in node) + 120  [0x102c40440]
+    +                         8006 v8::internal::(anonymous namespace)::Invoke(v8::internal::Isolate*, v8::internal::(anonymous namespace)::InvokeParams const&)  (in node) + 1652  [0x102c40adc]
+    +                           8006 Builtins_JSEntry  (in node) + 176  [0x103716570]
+    +                             8006 Builtins_JSEntryTrampoline  (in node) + 172  [0x1037168cc]
+    +                               8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                 8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                   8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                     8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                       8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                         8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                           8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                             8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                               8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                                 8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                                   8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                                     8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                                       8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                                         8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                                           8006 ???  (in <unknown binary>)  [0x12208872c]
+    +                                                             8006 Builtins_InterpreterEntryTrampoline  (in node) + 268  [0x103718bec]
+    +                                                               8006 ???  (in <unknown binary>)  [0x121f18e14]
+    +                                                                 8006 ???  (in <unknown binary>)  [0x121fce398]
+    +                                                                   8006 ???  (in <unknown binary>)  [0x121fce0f0]
+    +                                                                     8006 Builtins_ArrayMap  (in node) + 1216  [0x1037e5a20]
+    +                                                                       8006 ???  (in <unknown binary>)  [0x12303ed84]
+    +                                                                         7985 ???  (in <unknown binary>)  [0x12306fb2c]
+    +                                                                         ! 3567 ???  (in <unknown binary>)  [0x12306b37c]
+    +                                                                         ! : 3451 Builtins_CEntry_Return1_ArgvOnStack_BuiltinExit  (in node) + 84  [0x1037b5e94]
+    +                                                                         ! : | 3282 v8::internal::Builtin_SegmentIteratorPrototypeNext(int, unsigned long*, v8::internal::Isolate*)  (in node) + 100  [0x102b174ec]
+    +                                                                         ! : | + 930 v8::internal::JSSegmentIterator::Next(v8::internal::Isolate*, v8::internal::DirectHandle<v8::internal::JSSegmentIterator>)  (in node) + 112  [0x102fb6230]
+    +                                                                         ! : | + ! 785 icu_77::RuleBasedBreakIterator::next()  (in node) + 40  [0x1040b583c]
+    +                                                                         ! : | + ! : 778 icu_77::RuleBasedBreakIterator::BreakCache::nextOL()  (in node) + 20  [0x1040d7380]
+    +                                                                         ! : | + ! : | 144 icu_77::RuleBasedBreakIterator::BreakCache::populateFollowing()  (in node) + 556,808,...  [0x1040d75e4,0x1040d76e0,...]
+    +                                                                         ! : | + ! : | 96 icu_77::RuleBasedBreakIterator::BreakCache::populateFollowing()  (in node) + 676  [0x1040d765c]
+    +                                                                         ! : | + ! : | + 86 icu_77::RuleBasedBreakIterator::handleNext()  (in node) + 1484,1280,...  [0x1040b6100,0x1040b6034,...]
+Sort by top of stack, same collapsed (when >= 5):
+        __psynch_cvwait  (in libsystem_kernel.dylib)        496229
+        kevent  (in libsystem_kernel.dylib)        39903
+        __workq_kernreturn  (in libsystem_kernel.dylib)        8006
+        mach_msg2_trap  (in libsystem_kernel.dylib)        8006
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        8006
+        Builtins_RegExpPrototypeTestFast  (in node)        652
+        icu_77::RuleBasedBreakIterator::handleNext()  (in node)        584
+        v8::internal::JSObject::InitializeBody(v8::internal::Tagged<v8::internal::Map>, int, bool, v8::internal::MapWord, v8::internal::Tagged<v8::internal::Object>)  (in node)        382
+        v8::internal::Factory::AllocateRawWithAllocationSite(v8::internal::DirectHandle<v8::internal::Map>, v8::internal::AllocationType, v8::internal::DirectHandle<v8::internal::AllocationSite>)  (in node)        368
+        v8::internal::JSSegmentIterator::Next(v8::internal::Isolate*, v8::internal::DirectHandle<v8::internal::JSSegmentIterator>)  (in node)        365
+        v8::internal::Factory::InitializeJSObjectFromMap(v8::internal::Tagged<v8::internal::JSObject>, v8::internal::Tagged<v8::internal::Object>, v8::internal::Tagged<v8::internal::Map>, v8::internal::NewJSObjectType)  (in node)        277
+        Builtins_LoadIC  (in node)        275
+        v8::internal::Factory::InitializeJSObjectBody(v8::internal::Tagged<v8::internal::JSObject>, v8::internal::Tagged<v8::internal::Map>, int)  (in node)        241
+        _sigtramp  (in libsystem_platform.dylib)        191
+        icu_77::RuleBasedBreakIterator::next()  (in node)        165
+        icu_77::RuleBasedBreakIterator::BreakCache::populateFollowing()  (in node)        147
+        v8::internal::Builtin_SegmentIteratorPrototypeNext(int, unsigned long*, v8::internal::Isolate*)  (in node)        139
+        v8::internal::Factory::NewJSIteratorResult(v8::internal::DirectHandle<v8::internal::Object>, bool)  (in node)        136
+        v8::internal::PerThreadAssertScope<true, (v8::internal::PerThreadAssertType)2>::IsAllowed()  (in node)        125
+        v8::internal::ConsString::Get(unsigned int, v8::internal::SharedStringAccessGuardIfNeeded const&) const  (in node)        117
+        Builtins_CEntry_Return1_ArgvOnStack_BuiltinExit  (in node)        96
+        Builtins_LoadICTrampoline  (in node)        85
+        v8::internal::ReadOnlyRoots::one_pointer_filler_map_word()  (in node)        82
+        _tlv_get_addr  (in libdyld.dylib)        78
+        ???  (in <unknown binary>)  [0x121ce1284]        73
+        ???  (in <unknown binary>)  [0x121ce1774]        49
+        v8::internal::GetCurrentStackPosition()  (in node)        46
+        ???  (in <unknown binary>)  [0x12306b374]        44
+        v8::internal::InstructionStreamMap::FindEntry(unsigned long, unsigned long*)  (in node)        42
+        ???  (in <unknown binary>)  [0x12306b8c4]        40
+        v8::internal::Factory::NewJSObjectFromMap(v8::internal::DirectHandle<v8::internal::Map>, v8::internal::AllocationType, v8::internal::DirectHandle<v8::internal::AllocationSite>, v8::internal::NewJSObjectType)  (in node)        40
+        v8::internal::ScavengerCollector::CollectGarbage()  (in node)        39
+        ???  (in <unknown binary>)  [0x121ce1428]        38
+        __pthread_kill  (in libsystem_kernel.dylib)        38
+        ???  (in <unknown binary>)  [0x12306b7d8]        37
+        ucptrie_getValueWidth_77  (in node)        37
+        ???  (in <unknown binary>)  [0x121ce1154]        36
+        ???  (in <unknown binary>)  [0x121ce15f8]        36
+        ???  (in <unknown binary>)  [0x12306a73c]        33
+        ???  (in <unknown binary>)  [0x12306b710]        33
+        ???  (in <unknown binary>)  [0x12306b728]        33
+        ???  (in <unknown binary>)  [0x121ce10fc]        32

@@ -1,0 +1,17 @@
+node_modules/
+storybook-static/
+.next/
+dist/
+prof/
+.DS_Store
+.env
+.env.local
+
+# Generated stories (regenerate with scripts/gen-stories.mjs)
+src/stories-gen/
+
+# Claude Code internal files
+.claude/
+
+# Local-only draft notes (not for public repo)
+ISSUE_DRAFT.md
