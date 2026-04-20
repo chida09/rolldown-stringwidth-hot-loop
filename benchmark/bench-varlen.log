@@ -1,13 +1,15 @@
 # stringWidth cost vs line length (10,000 calls each)
+# Run at: 2026-04-20T07:34:10.974Z
+# Node: v24.13.0 on darwin-arm64
 
 chars/line | total (ms) | per-call µs | ratio vs 50ch
-        50 |      50.19 |         5.0 |          1.00x
-        92 |      77.57 |         7.8 |          1.55x
-       150 |     118.99 |        11.9 |          2.37x
-       300 |     221.85 |        22.2 |          4.42x
-       600 |     434.41 |        43.4 |          8.65x
-      1000 |     710.07 |        71.0 |         14.15x
-      2000 |    1453.24 |       145.3 |         28.95x
+        50 |      50.82 |         5.1 |          1.00x
+        92 |      80.54 |         8.1 |          1.58x
+       150 |     123.31 |        12.3 |          2.43x
+       300 |     227.65 |        22.8 |          4.48x
+       600 |     441.27 |        44.1 |          8.68x
+      1000 |     724.96 |        72.5 |         14.26x
+      2000 |    1419.17 |       141.9 |         27.92x
 
 # Confirm O(n) scaling in characters:
 # 50ch → 2000ch is 40x longer, expected ~40x runtime if O(n)

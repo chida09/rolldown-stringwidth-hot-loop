@@ -47,6 +47,8 @@ console.log('# stringWidth micro-benchmark');
 console.log('# Context: rolldown@1.0.0-rc.15/rc.16 inlines string-width@7.x in dist/shared/rolldown-build-*.mjs');
 console.log('# stringWidthFull = exact port of rolldown inlined version');
 console.log('# stringWidthPatched = .length fast-path (what our local patch does)');
+console.log(`# Run at: ${new Date().toISOString()}`);
+console.log(`# Node: ${process.version} on ${process.platform}-${process.arch}`);
 console.log('');
 console.log('N chunks | chars/line | full (ms) | patched (ms) | ratio | full per-line µs');
 console.log('---------|------------|-----------|--------------|-------|------------------');

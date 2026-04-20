@@ -9,6 +9,8 @@ function bench(fn, iterations = 1) {
 }
 
 console.log('# stringWidth cost vs line length (10,000 calls each)');
+console.log(`# Run at: ${new Date().toISOString()}`);
+console.log(`# Node: ${process.version} on ${process.platform}-${process.arch}`);
 console.log('');
 console.log('chars/line | total (ms) | per-call µs | ratio vs 50ch');
 

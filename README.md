@@ -1,8 +1,11 @@
 # rolldown `stringWidth` hot-loop investigation
 
-Evidence that `rolldown@1.0.0-rc.15 / rc.16` inlines `string-width@7.x` (via `consola`) into its build bundle, where `Intl.Segmenter` + `RegExp.prototype.test` dominate CPU during the reporter / post-chunk-emission phase of a large Vite 8 build.
+Evidence that `rolldown@1.0.0-rc.15 / rc.16` inlines `string-width@7.x` (via `consola`) into its build bundle, where `Intl.Segmenter` + `RegExp.prototype.test` account for ~38% of main-thread CPU during the reporter / post-chunk-emission phase of a large Vite 8 build.
 
 Captured while investigating a ~6-minute post-chunk-emission hang observed on a private Nx monorepo (`~9,400` modules / `~1,515` emitted chunks) running `@storybook/nextjs-vite@10.3.5` + `vite@8.0.8`.
+
+> [!NOTE]
+> **Scope of this claim.** The CPU profile and benchmarks show that the inlined `stringWidth` is **one major contributor** to the hang — enough to explain roughly 10–40% of the observed CPU time depending on how often it is called per chunk. They do **not** prove that fixing `stringWidth` alone would eliminate the hang; the full 6-minute duration implies there is at least one other amplifier on top. The fix proposed below is still worthwhile on its own: it's a large, easily-measurable constant factor that every Rolldown-backed Vite 8 consumer pays.
 
 ## What's in this repo
 
@@ -78,39 +81,39 @@ A grep of the entire `node_modules` tree of the affected private build turned up
 node_modules/.pnpm/rolldown@1.0.0-rc.15/node_modules/rolldown/dist/shared/rolldown-build-*.mjs
 ```
 
-Lines 2822–2846 are an inlined copy of `string-width@7.x`:
+Lines 2822–2846 are an inlined copy of `string-width@7.x` — the essential shape:
 
 ```js
-const segmenter = globalThis.Intl?.Segmenter
-  ? new Intl.Segmenter()
-  : { segment: (str) => str.split('') };
-
-function stringWidth$1(string, options = {}) {
-  // ...
-  for (const { segment: character } of segmenter.segment(string)) {
-    const codePoint = character.codePointAt(0);
-    // ... several range checks ...
-    if (defaultIgnorableCodePointRegex.test(character)) continue;
-    if (emojiRegex().test(character)) { width += 2; continue; }
-    width += eastAsianWidth(codePoint, eastAsianWidthOptions);
-  }
-  return width;
+for (const { segment: character } of segmenter.segment(string)) {
+  // ... codePoint range checks ...
+  if (defaultIgnorableCodePointRegex.test(character)) continue;
+  if (emojiRegex().test(character)) { width += 2; continue; }
+  width += eastAsianWidth(codePoint, eastAsianWidthOptions);
 }
 ```
 
-The only in-bundle call site is `FancyReporter.formatLogObj` (line 2914):
+(ICU break iteration per grapheme + two `RegExp.test` calls + a numeric range check, done for every string that reaches `FancyReporter`.)
 
-```js
-const space = (opts.columns || 0) - stringWidth(left) - stringWidth(right) - 2;
-```
+The only in-bundle call site is `FancyReporter.formatLogObj` at line 2914: `stringWidth(left) - stringWidth(right)` on every log message.
 
-`FancyReporter` comes from `consola` — transitively bundled because `packages/rolldown/src/cli/logger.ts` imports `consola`, and `utils/bindingify-output-options.ts` (on the programmatic build path, **not** CLI-only) uses the same logger for deprecation warnings. Rolldown's own build step inlines everything into `dist/shared/rolldown-build-*.mjs`, so any consumer importing `RolldownBuild` — including Vite 8 — pulls in the whole `FancyReporter` + `string-width` subtree.
+`FancyReporter` comes from `consola`, transitively pulled in on the **programmatic build path** (not CLI-only) via:
 
-## Candidate fixes (listed smallest → most invasive)
+- [`utils/bindingify-output-options.ts#L7`](https://github.com/rolldown/rolldown/blob/v1.0.0-rc.16/packages/rolldown/src/utils/bindingify-output-options.ts#L7) imports the logger from [`cli/logger.ts`](https://github.com/rolldown/rolldown/blob/v1.0.0-rc.16/packages/rolldown/src/cli/logger.ts#L1) (which does `createConsola()` at module top level).
+- The same file then calls `logger.warn(...)` for deprecation/conflict diagnostics — [first one at L49](https://github.com/rolldown/rolldown/blob/v1.0.0-rc.16/packages/rolldown/src/utils/bindingify-output-options.ts#L49), with several more through L272.
 
-1. **Replace the `logger.warn` calls in `utils/bindingify-output-options.ts` with `console.warn`.** Removes the entire `FancyReporter` + `string-width` subtree from the programmatic build bundle. CLI-side `cli/logger.ts` can stay on consola unchanged. Smallest blast radius, biggest runtime win for Vite consumers.
-2. **Add an ASCII fast-path to the inlined `stringWidth`**: if the string matches `[\x00-\x7F]*`, return `string.replace(ansiRegex, '').length` directly. Chunk paths and ASCII log messages skip Segmenter entirely.
-3. **Push the fast-path fix upstream in `sindresorhus/string-width` or `unjs/consola`.** Widest benefit but slowest to ship — depends on upstream release cadence and on Rolldown rebuilding its bundle.
+Rolldown's build step inlines all of it into `dist/shared/rolldown-build-*.mjs`, so any consumer importing `RolldownBuild` — Vite 8 included — drags in the whole `FancyReporter` + `string-width` subtree, and every `logger.warn` runs through `stringWidth(left) + stringWidth(right)`.
+
+## Candidate fix
+
+**Primary:** drop `consola` from the programmatic build path by replacing the `logger.warn` calls in `utils/bindingify-output-options.ts` with `console.warn`. This removes the entire `FancyReporter` + `string-width` subtree from the build bundle. `cli/logger.ts` can keep using consola unchanged so the CLI's fancy output isn't affected. Smallest blast radius, largest runtime win for every Rolldown-backed Vite consumer.
+
+<details>
+<summary>Alternatives if the primary fix is rejected</summary>
+
+- **ASCII fast-path in the inlined `stringWidth`**: match `/^[\x00-\x7F]*$/` and fall through to `string.replace(ansiRegex, '').length`. Chunk paths and ASCII log lines skip Segmenter entirely.
+- **Upstream fix in `sindresorhus/string-width` or `unjs/consola`**: widest benefit but slowest to reach consumers — depends on upstream release cadence **and** Rolldown rebuilding its bundle.
+
+</details>
 
 ## Workaround (for users hitting the hang today)
 
@@ -147,3 +150,28 @@ node benchmark/run-bench-real.mjs
 node benchmark/run-bench-varlen.mjs
 node benchmark/run-bench.mjs  # port without string-width dep
 ```
+
+## Reproducing the CPU profile
+
+The snapshot in `cpu-profile/hung-build-stack-summary.txt` was captured on macOS with `sample`, which attaches to a running process without killing it (Node's `--cpu-prof` flag doesn't help here because it only writes the profile on graceful exit — a hung build has to be `SIGKILL`ed):
+
+```bash
+# Start the hung build in one terminal (substitute your own --config-dir / --output-dir)
+node ./node_modules/storybook/dist/bin/dispatcher.js build \
+  --config-dir <your-storybook-config-dir> \
+  --output-dir <your-output-dir> \
+  --quiet
+
+# In another terminal, once CPU is pinned at ~100% after the "chunks are larger" warning:
+sample <pid> 15 -file /tmp/stacks.txt
+
+# Key sections of the output:
+grep -n "^Call graph:" /tmp/stacks.txt         # per-thread tree with all inclusive counts
+grep -n "^Sort by top of stack" /tmp/stacks.txt  # aggregated top-of-stack hotspots
+```
+
+## External references
+
+- [rolldown/rolldown](https://github.com/rolldown/rolldown) — dep chain origin. I searched for duplicate reports using `hang`, `stringWidth`, `Intl.Segmenter`, `100% CPU`, `chunks are larger`, etc. The open `hang`-labeled issues (e.g. [#3890](https://github.com/rolldown/rolldown/issues/3890)) are all watch-mode / dev-server scoped — none match the post-chunk-emission build-hang pattern here.
+- [unjs/consola](https://github.com/unjs/consola) — `FancyReporter.formatLogObj` is the in-bundle call site.
+- [sindresorhus/string-width](https://github.com/sindresorhus/string-width) — the `Intl.Segmenter`-per-grapheme pattern. Open issues are correctness-focused ([#62](https://github.com/sindresorhus/string-width/issues/62), [#75](https://github.com/sindresorhus/string-width/issues/75)); no performance-specific tracker.

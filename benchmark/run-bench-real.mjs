@@ -57,7 +57,9 @@ function bench(fn, iterations = 1) {
 }
 
 console.log('# Real string-width@7.2.0 (same version rolldown bundles) benchmark');
+console.log(`# Run at: ${new Date().toISOString()}`);
 console.log(`# Node: ${process.version}`);
+console.log(`# Platform: ${process.platform}-${process.arch}`);
 console.log('');
 console.log('N lines | chars/line | real (ms) | fast (ms) | ratio | per-line µs (real)');
 console.log('--------|------------|-----------|-----------|-------|-------------------');
